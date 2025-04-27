@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Captcha App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    #captcha-container {
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <form id="captcha-form">
+    <div id="captcha-container" class="cf-turnstile"></div>
+  </form>
+  <script>
+    function onSuccess(token) {
+      window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'success', token: token }));
+    }
+
+    function onExpired() {
+      window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'expired' }));
+    }
+
+    function onError() {
+      window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'error' }));
+    }
+
+    function loadCaptcha() {
+      const sitekey = getQueryParam('sitekey', '1x00000000000000000000AA');
+      const language = getQueryParam('language', 'en');
+      const theme = getQueryParam('theme', 'light');
+      const size = getQueryParam('size', 'flexible');
+
+      turnstile.render('#captcha-container', {
+        sitekey,
+        language,
+        theme,
+        size,
+        'retry': 'auto',
+        'feedback': false,
+        'callback': onSuccess,
+        'expired-callback': onExpired,
+        'error-callback': onError
+      });
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+    script.async = true;
+    script.defer = true;
+    script.onload = loadCaptcha;
+    script.onerror = function () {
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ event: 'error', message: 'Failed to load Turnstile' })
+      );
+    };
+    document.head.appendChild(script);
+  </script>
+</body>
+
+</html>
