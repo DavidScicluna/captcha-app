@@ -28,6 +28,11 @@
     <div id="captcha-container" class="cf-turnstile"></div>
   </form>
   <script>
+    function getQueryParam(name, fallback = '') {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name) || fallback;
+    }
+
     function onSuccess(token) {
       window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'success', token: token }));
     }
